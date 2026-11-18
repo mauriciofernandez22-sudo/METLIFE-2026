@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Solo cuentas del dominio autorizado pueden leer y escribir el proyecto.
+// Cambia equipoxp.com si usas otro dominio.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function delEquipo() {
+      return request.auth != null
+          && request.auth.token.email_verified == true
+          && request.auth.token.email.matches('.*@equipoxp[.]com$');
+    }
+
+    match /proyectos/{proyecto}/vistas/{vista} {
+      allow read, write: if delEquipo();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
